@@ -13,27 +13,45 @@ struct ContentView: View {
     @Query private var items: [Item]
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
+        VStack(spacing: 0) {
+            HStack {
+                Text("The Pause")
+                    .font(.headline)
+                Spacer()
+                Button(action: addItem) {
+                    Image(systemName: "plus")
+                }
+                .buttonStyle(.borderless)
+                .help("Add Item")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+
+            Divider()
+
+            if items.isEmpty {
+                ContentUnavailableView("No Items", systemImage: "tray", description: Text("Add an item to get started."))
+                    .frame(maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(items) { item in
                         Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
                     }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                    .onDelete(perform: deleteItems)
                 }
             }
-        } detail: {
-            Text("Select an item")
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
         }
     }
 
@@ -56,4 +74,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: Item.self, inMemory: true)
+        .frame(width: 320, height: 400)
 }

@@ -24,9 +24,11 @@ struct The_PauseApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("The Pause", systemImage: "pause.circle.fill") {
             ContentView()
+                .frame(width: 320, height: 400)
         }
+        .menuBarExtraStyle(.window)
         .modelContainer(sharedModelContainer)
     }
 }

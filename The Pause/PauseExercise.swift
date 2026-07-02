@@ -74,6 +74,66 @@ struct PauseExercise: Identifiable, Equatable {
             todo: "With each exhale, release one small tension in the body.",
             effect: "Links breathing with release, making calm easier to access."
         ),
+        PauseExercise(
+            id: "silent-counting",
+            title: "Silent Counting",
+            todo: "Count 10 breaths. Restart if the mind wanders.",
+            effect: "Builds attention control without drama."
+        ),
+        PauseExercise(
+            id: "belly-check",
+            title: "Belly Check",
+            todo: "Notice if your belly is tight. Let it soften.",
+            effect: "Reduces threat-mode tension."
+        ),
+        PauseExercise(
+            id: "thought-watching",
+            title: "Thought Watching",
+            todo: "Watch one thought arise and fade without following it.",
+            effect: "Trains detachment from mental noise."
+        ),
+        PauseExercise(
+            id: "no-fixing-pause",
+            title: "No Fixing Pause",
+            todo: "Sit for 30 seconds without trying to improve anything.",
+            effect: "Weakens the constant control habit."
+        ),
+        PauseExercise(
+            id: "gratitude-flash",
+            title: "Gratitude Flash",
+            todo: "Name one ordinary thing you are grateful for.",
+            effect: "Shifts the brain away from scarcity and complaint loops."
+        ),
+        PauseExercise(
+            id: "inner-smile",
+            title: "Inner Smile",
+            todo: "Slightly soften the face as if gently smiling inside.",
+            effect: "Calms emotional tone without forcing happiness."
+        ),
+        PauseExercise(
+            id: "sound-awareness",
+            title: "Sound Awareness",
+            todo: "Listen to all sounds equally for 30 seconds.",
+            effect: "Expands awareness beyond narrow self-focus."
+        ),
+        PauseExercise(
+            id: "desire-label",
+            title: "Desire Label",
+            todo: "When wanting something, label it: “wanting.”",
+            effect: "Reduces craving by making it visible."
+        ),
+        PauseExercise(
+            id: "enough-moment",
+            title: "Enough Moment",
+            todo: "Silently say: “This moment is enough.”",
+            effect: "Counters restless chasing and future obsession."
+        ),
+        PauseExercise(
+            id: "compassion-breath",
+            title: "Compassion Breath",
+            todo: "Inhale: “I notice.” Exhale: “I soften.”",
+            effect: "Links awareness with kindness, not self-attack."
+        ),
     ]
 
     static func random(excluding previous: PauseExercise? = nil) -> PauseExercise {

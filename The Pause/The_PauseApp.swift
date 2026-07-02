@@ -11,12 +11,16 @@ import SwiftUI
 struct The_PauseApp: App {
     @State private var session = ExerciseSession()
 
+    init() {
+        LaunchAtLogin.enableIfNeeded()
+    }
+
     var body: some Scene {
         MenuBarExtra {
             ContentView(session: session)
                 .frame(width: 320, height: 400)
         } label: {
-            Label("The Pause", systemImage: "pause.circle.fill")
+            Label("The Pause", systemImage: "brain.head.profile.fill")
         }
         .menuBarExtraStyle(.window)
     }

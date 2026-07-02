@@ -6,29 +6,18 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct The_PauseApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @State private var session = ExerciseSession()
 
     var body: some Scene {
-        MenuBarExtra("The Pause", systemImage: "pause.circle.fill") {
-            ContentView()
+        MenuBarExtra {
+            ContentView(session: session)
                 .frame(width: 320, height: 400)
+        } label: {
+            Label("The Pause", systemImage: "pause.circle.fill")
         }
         .menuBarExtraStyle(.window)
-        .modelContainer(sharedModelContainer)
     }
 }

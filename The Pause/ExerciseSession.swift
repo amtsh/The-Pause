@@ -1,0 +1,123 @@
+//
+//  ExerciseSession.swift
+//  The Pause
+//
+//  Created by Amit Shinde on 2026-07-02.
+//
+
+import AppKit
+import SwiftUI
+
+private extension Notification.Name {
+    static let windowWillOrderOnScreen = Notification.Name("NSWindowWillOrderOnScreenNotification")
+    static let windowDidOrderOffScreen = Notification.Name("NSWindowDidOrderOffScreenNotification")
+}
+
+private enum PopoverWindow {
+    static let identifier = NSUserInterfaceItemIdentifier("ThePausePopover")
+}
+
+@MainActor
+@Observable
+final class ExerciseSession {
+    var exercise = PauseExercise.random()
+    private var isDismissed = true
+    private var didInstallObservers = false
+
+    func installIfNeeded() {
+        guard !didInstallObservers else { return }
+        didInstallObservers = true
+
+        let center = NotificationCenter.default
+        let openEvents: [Notification.Name] = [
+            NSWindow.didBecomeKeyNotification,
+            .windowWillOrderOnScreen,
+        ]
+        let closeEvents: [Notification.Name] = [
+            NSWindow.didResignKeyNotification,
+            NSWindow.willCloseNotification,
+            .windowDidOrderOffScreen,
+        ]
+
+        for name in openEvents {
+            center.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
+                guard let self, let window = notification.object as? NSWindow else { return }
+                Task { @MainActor in
+                    self.handleWindowShown(window)
+                }
+            }
+        }
+
+        for name in closeEvents {
+            center.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
+                guard let self, let window = notification.object as? NSWindow else { return }
+                Task { @MainActor in
+                    self.handleWindowHidden(window)
+                }
+            }
+        }
+    }
+
+    func tagPopoverWindow(from view: NSView) {
+        guard let window = view.window else { return }
+        window.identifier = PopoverWindow.identifier
+        if window.isVisible {
+            handleWindowShown(window)
+        }
+    }
+
+    func showPrevious() {
+        exercise = exercise.previous
+    }
+
+    func showNext() {
+        exercise = exercise.next
+    }
+
+    private func handleWindowShown(_ window: NSWindow) {
+        guard window.identifier == PopoverWindow.identifier else { return }
+        guard isDismissed else { return }
+        isDismissed = false
+        exercise = PauseExercise.random(excluding: exercise)
+    }
+
+    private func handleWindowHidden(_ window: NSWindow) {
+        guard window.identifier == PopoverWindow.identifier else { return }
+        isDismissed = true
+    }
+}
+
+fileprivate struct PopoverWindowTagger: NSViewRepresentable {
+    let session: ExerciseSession
+
+    func makeNSView(context: Context) -> NSView {
+        let view = WindowObservingView()
+        view.onWindowChange = { view in
+            session.tagPopoverWindow(from: view)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        guard let nsView = nsView as? WindowObservingView else { return }
+        nsView.onWindowChange = { view in
+            session.tagPopoverWindow(from: view)
+        }
+        session.tagPopoverWindow(from: nsView)
+    }
+
+    private final class WindowObservingView: NSView {
+        var onWindowChange: ((NSView) -> Void)?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            onWindowChange?(self)
+        }
+    }
+}
+
+extension View {
+    func trackPopoverWindow(session: ExerciseSession) -> some View {
+        background(PopoverWindowTagger(session: session))
+    }
+}

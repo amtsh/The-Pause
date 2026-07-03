@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Published copy: docs/appcast.xml → https://amtsh.github.io/The-Pause/appcast.xml
-  Keep this file in sync when cutting releases.
+  Sparkle appcast — served at:
+  https://raw.githubusercontent.com/amtsh/The-Pause/main/appcast.xml
 -->
 <rss version="2.0"
      xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
      xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>The Pause</title>
-    <link>https://amtsh.github.io/The-Pause/appcast.xml</link>
+    <link>https://raw.githubusercontent.com/amtsh/The-Pause/main/appcast.xml</link>
     <description>Most recent release of The Pause</description>
     <language>en</language>
 

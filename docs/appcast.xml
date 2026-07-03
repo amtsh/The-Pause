@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Published copy: docs/appcast.xml → https://amtsh.github.io/The-Pause/appcast.xml
-  Keep this file in sync when cutting releases.
--->
 <rss version="2.0"
      xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
      xmlns:dc="http://purl.org/dc/elements/1.1/">

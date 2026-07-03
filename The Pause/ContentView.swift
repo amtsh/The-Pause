@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var session: ExerciseSession
+    var updaterManager: UpdaterManager
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
@@ -67,6 +68,12 @@ struct ContentView: View {
                             LaunchAtLogin.setEnabled(newValue)
                             launchAtLogin = LaunchAtLogin.isEnabled
                         }
+
+                    Divider()
+
+                    Button("Check for Updates\u{2026}") {
+                        updaterManager.checkForUpdates()
+                    }
 
                     Divider()
 
@@ -255,6 +262,6 @@ private struct PressablePlainButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    ContentView(session: ExerciseSession())
+    ContentView(session: ExerciseSession(), updaterManager: UpdaterManager())
         .frame(width: 320, height: 400)
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Appcast for The Pause — hosted at:
+  https://amtsh.github.io/The-Pause/appcast.xml
+
+  Steps to publish a new release:
+  1. Archive & export a notarized .dmg from Xcode
+  2. Run: ./Sparkle/bin/sign_update ThePause.dmg
+  3. Copy the printed EdDSA signature into sparkle:edDSASignature below
+  4. Update version, shortVersionString, pubDate, url, and length
+  5. Commit & push — GitHub Pages serves this automatically
+-->
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>The Pause</title>
+    <link>https://amtsh.github.io/The-Pause/appcast.xml</link>
+    <description>Most recent release of The Pause</description>
+    <language>en</language>
+
+    <item>
+      <title>Version 1.0</title>
+      <sparkle:releaseNotesLink>
+        https://github.com/amtsh/The-Pause/releases/tag/v1.0
+      </sparkle:releaseNotesLink>
+      <pubDate>Fri, 04 Jul 2026 00:00:00 +0000</pubDate>
+      <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
+      <enclosure
+        url="https://github.com/amtsh/The-Pause/releases/download/v1.0/ThePause.dmg"
+        sparkle:edDSASignature="REPLACE_WITH_OUTPUT_OF_sign_update"
+        length="0"
+        type="application/octet-stream"/>
+    </item>
+
+  </channel>
+</rss>

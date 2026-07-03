@@ -11,13 +11,16 @@ import SwiftUI
 struct The_PauseApp: App {
     @State private var session = ExerciseSession()
 
+    // Sparkle updater — must be held strongly for the app lifetime.
+    private let updaterManager = UpdaterManager()
+
     init() {
         LaunchAtLogin.enableIfNeeded()
     }
 
     var body: some Scene {
         MenuBarExtra {
-            ContentView(session: session)
+            ContentView(session: session, updaterManager: updaterManager)
                 .frame(width: 320, height: 400)
         } label: {
             Image(systemName: "brain.head.profile.fill")

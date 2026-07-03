@@ -20,7 +20,8 @@ struct The_PauseApp: App {
             ContentView(session: session)
                 .frame(width: 320, height: 400)
         } label: {
-            Label("The Pause", systemImage: "brain.head.profile.fill")
+            Image(systemName: "brain.head.profile.fill")
+                .symbolRenderingMode(.hierarchical)
         }
         .menuBarExtraStyle(.window)
     }

@@ -16,7 +16,6 @@ struct ContentView: View {
     private let horizontalPadding: CGFloat = 16
     private let sectionVerticalPadding: CGFloat = 10
     private let popoverCornerRadius: CGFloat = 10
-    private let exerciseTransitionDuration: Double = 0.22
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,13 +23,15 @@ struct ContentView: View {
                 label: "Previous",
                 chevron: "chevron.up",
                 title: session.exercise.previous.title,
+                contentID: session.exercise.id,
                 horizontalPadding: horizontalPadding,
+                reduceMotion: reduceMotion,
                 action: { navigatePrevious() }
             )
 
             sectionDivider()
 
-            ExerciseContent(exercise: session.exercise)
+            ExerciseContent(exercise: session.exercise, reduceMotion: reduceMotion)
                 .id(session.exercise.id)
                 .transition(exerciseTransition)
                 .padding(.horizontal, horizontalPadding)
@@ -45,7 +46,9 @@ struct ContentView: View {
                 label: "Next",
                 chevron: "chevron.down",
                 title: session.exercise.next.title,
+                contentID: session.exercise.id,
                 horizontalPadding: horizontalPadding,
+                reduceMotion: reduceMotion,
                 action: { navigateNext() }
             )
 
@@ -88,6 +91,10 @@ struct ContentView: View {
         .background {
             RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
                 .fill(.regularMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
+                        .strokeBorder(.primary.opacity(0.06), lineWidth: 0.5)
+                }
         }
         .clipShape(RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous))
         .focusable()
@@ -116,11 +123,12 @@ struct ContentView: View {
 
     private func sectionDivider() -> some View {
         Divider()
+            .opacity(0.45)
             .padding(.horizontal, horizontalPadding)
     }
 
     private var exerciseAnimation: Animation? {
-        reduceMotion ? nil : .easeInOut(duration: exerciseTransitionDuration)
+        reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.86)
     }
 
     private var exerciseTransition: AnyTransition {
@@ -143,21 +151,29 @@ struct ContentView: View {
     }
 
     private func navigatePrevious() {
+        HapticFeedback.navigate()
         session.showPrevious()
     }
 
     private func navigateNext() {
+        HapticFeedback.navigate()
         session.showNext()
     }
 }
 
 private struct ExerciseContent: View {
     let exercise: PauseExercise
+    let reduceMotion: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            exerciseIcon
+                .padding(.bottom, 2)
+                .accessibilityHidden(true)
+
             Text(exercise.title)
                 .font(.title3.weight(.semibold))
+                .foregroundStyle(.secondary)
 
             Text(exercise.todo)
                 .font(.body)
@@ -167,13 +183,29 @@ private struct ExerciseContent: View {
                 .foregroundStyle(.secondary)
         }
     }
+
+    @ViewBuilder
+    private var exerciseIcon: some View {
+        let icon = Image(systemName: exercise.symbolName)
+            .font(.system(size: 26, weight: .light))
+            .foregroundStyle(.tertiary)
+            .symbolRenderingMode(.hierarchical)
+
+        if reduceMotion {
+            icon
+        } else {
+            icon.symbolEffect(.bounce, value: exercise.id)
+        }
+    }
 }
 
 private struct NeighborRow: View {
     let label: String
     let chevron: String
     let title: String
+    let contentID: String
     let horizontalPadding: CGFloat
+    let reduceMotion: Bool
     let action: () -> Void
 
     @State private var isHovered = false
@@ -183,6 +215,7 @@ private struct NeighborRow: View {
             HStack(spacing: 6) {
                 Image(systemName: chevron)
                     .font(.footnote.weight(.semibold))
+                    .foregroundStyle(isHovered ? Color.primary.opacity(0.55) : Color.secondary)
 
                 Text(label)
 
@@ -190,6 +223,7 @@ private struct NeighborRow: View {
 
                 Text(title)
                     .lineLimit(1)
+                    .contentTransition(.opacity)
             }
             .font(.footnote)
             .foregroundStyle(.secondary)
@@ -201,10 +235,22 @@ private struct NeighborRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressablePlainButtonStyle(reduceMotion: reduceMotion))
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: isHovered)
+        .animation(reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.86), value: contentID)
         .onHover { isHovered = $0 }
         .accessibilityLabel("\(label) exercise: \(title)")
         .help("\(label): \(title)")
+    }
+}
+
+private struct PressablePlainButtonStyle: ButtonStyle {
+    let reduceMotion: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 

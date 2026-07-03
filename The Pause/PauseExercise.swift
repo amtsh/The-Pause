@@ -156,4 +156,30 @@ struct PauseExercise: Identifiable, Equatable {
         }
         return exercises[(index + 1) % exercises.count]
     }
+
+    var symbolName: String {
+        switch id {
+        case "one-slow-breath": return "wind"
+        case "relax-the-face": return "face.smiling"
+        case "shoulder-drop": return "figure.stand"
+        case "feel-the-hands": return "hand.raised"
+        case "name-the-mood": return "brain.head.profile"
+        case "watch-the-urge": return "eye"
+        case "one-thing-only": return "scope"
+        case "soft-gaze": return "eye.circle"
+        case "kind-thought": return "heart"
+        case "let-go-exhale": return "lungs.fill"
+        case "silent-counting": return "10.circle"
+        case "belly-check": return "figure.mind.and.body"
+        case "thought-watching": return "cloud"
+        case "no-fixing-pause": return "pause.circle"
+        case "gratitude-flash": return "sparkles"
+        case "inner-smile": return "sun.max"
+        case "sound-awareness": return "ear"
+        case "desire-label": return "tag"
+        case "enough-moment": return "checkmark.circle"
+        case "compassion-breath": return "heart.circle"
+        default: return "leaf"
+        }
+    }
 }

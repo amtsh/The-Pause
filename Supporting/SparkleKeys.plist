@@ -4,6 +4,8 @@
 <dict>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/amtsh/The-Pause/main/appcast.xml</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
 	<key>SUPublicEDKey</key>
 	<string>YfF6+LJE5QTnNeVV2fBv5nAGDYsY1smipJFmpG1+UXE=</string>
 </dict>

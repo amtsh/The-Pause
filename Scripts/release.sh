@@ -8,14 +8,18 @@ set -euo pipefail
 #   ./Scripts/release.sh --notes "Bug fixes and polish."
 #   ./Scripts/release.sh --app ~/Downloads/The\ Pause.app
 #   ./Scripts/release.sh --local-only
+#   ./Scripts/release.sh --skip-notarize
 #
 # Requires: xcodebuild, create-dmg, gh (GH_HOST=github.com)
+# Notarization requires a notarytool keychain profile (see AGENTS.md).
 
 readonly GITHUB_REPO="amtsh/The-Pause"
 readonly APP_NAME="The Pause"
 readonly DMG_FILENAME="ThePause.dmg"
 readonly PROJECT="The Pause.xcodeproj"
 readonly SCHEME="The Pause"
+readonly TEAM_ID="S8QW3AN65C"
+readonly DEFAULT_NOTARY_PROFILE="The-Pause-Notary"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -29,7 +33,9 @@ APP_PATH=""
 RELEASE_NOTES=""
 LOCAL_ONLY=0
 NO_BUMP=0
+SKIP_NOTARIZE=0
 DRY_RUN=0
+NOTARY_PROFILE="${NOTARY_PROFILE:-$DEFAULT_NOTARY_PROFILE}"
 
 VERSION=""
 BUILD=""
@@ -40,15 +46,20 @@ usage() {
 Usage: $(basename "$0") [options]
 
 Build a DMG from the current project and upload it to GitHub Releases.
-Auto-increments the build number before archiving. Does not commit or push.
+Auto-increments the build number before archiving. Notarizes the app and DMG.
+Does not commit or push.
 
 Options:
-  --notes TEXT    GitHub release notes (default: auto-generated).
-  --app PATH      Skip archive/export; package this .app into the DMG.
-  --no-bump       Skip build-number auto-increment (use with --app).
-  --local-only    Build the DMG only; do not create or update a GitHub release.
-  --dry-run       Print planned steps without building.
-  -h, --help      Show this help.
+  --notes TEXT        GitHub release notes (default: auto-generated).
+  --app PATH          Skip archive/export; package this .app into the DMG.
+  --no-bump           Skip build-number auto-increment (use with --app).
+  --skip-notarize     Skip Apple notarization (local testing only).
+  --local-only        Build the DMG only; do not create or update a GitHub release.
+  --dry-run           Print planned steps without building.
+  -h, --help          Show this help.
+
+Environment:
+  NOTARY_PROFILE      notarytool keychain profile (default: ${DEFAULT_NOTARY_PROFILE})
 
 Output:
   ${BUILD_DIR}/${DMG_FILENAME}
@@ -130,6 +141,46 @@ build_app() {
 
   APP_PATH="${EXPORT_DIR}/${APP_NAME}.app"
   [[ -d "${APP_PATH}" ]] || die "Expected exported app at ${APP_PATH}"
+}
+
+notarize_path() {
+  local path="$1"
+  local label="$2"
+  local submit_path="$3"
+
+  log "Notarizing ${label} (profile: ${NOTARY_PROFILE})..."
+  run xcrun notarytool submit "${submit_path}" \
+    --keychain-profile "${NOTARY_PROFILE}" \
+    --team-id "${TEAM_ID}" \
+    --wait
+  run xcrun stapler staple "${path}"
+}
+
+notarize_app() {
+  if [[ "${SKIP_NOTARIZE}" -eq 1 ]]; then
+    log "Skipping notarization (--skip-notarize)"
+    return 0
+  fi
+
+  local zip_path="${BUILD_DIR}/${APP_NAME}.zip"
+
+  log "Preparing app for notarization..."
+  run ditto -c -k --keepParent "${APP_PATH}" "${zip_path}"
+  notarize_path "${APP_PATH}" "${APP_NAME}.app" "${zip_path}"
+  run rm -f "${zip_path}"
+
+  if [[ "${DRY_RUN}" -eq 0 ]]; then
+    log "Gatekeeper check:"
+    spctl -a -vv -t install "${APP_PATH}" 2>&1 || true
+  fi
+}
+
+notarize_dmg() {
+  if [[ "${SKIP_NOTARIZE}" -eq 1 ]]; then
+    return 0
+  fi
+
+  notarize_path "${DMG_PATH}" "${DMG_FILENAME}" "${DMG_PATH}"
 }
 
 create_dmg() {
@@ -220,6 +271,10 @@ parse_args() {
         NO_BUMP=1
         shift
         ;;
+      --skip-notarize)
+        SKIP_NOTARIZE=1
+        shift
+        ;;
       --local-only)
         LOCAL_ONLY=1
         shift
@@ -259,7 +314,9 @@ main() {
     run mkdir -p "${BUILD_DIR}"
   fi
 
+  notarize_app
   create_dmg
+  notarize_dmg
 
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     log "Dry run complete. DMG would be at ${DMG_PATH}"

@@ -15,9 +15,10 @@ Instructions for AI agents working in this repo. Follow these workflows when the
 
 | File | Purpose |
 |---|---|
-| `Scripts/release.sh` | Build DMG, auto-increment build, upload to GitHub Releases |
+| `Scripts/release.sh` | Build, notarize, DMG, auto-increment build, upload to GitHub Releases |
 | `Supporting/ExportOptions.plist` | Developer ID export for `xcodebuild -exportArchive` |
-| `Supporting/SparkleKeys.plist` | `SUFeedURL`, `SUPublicEDKey` (public key only) |
+| `Supporting/The Pause.entitlements` | App Sandbox + Sparkle mach-lookup entitlements |
+| `Supporting/SparkleKeys.plist` | `SUFeedURL`, `SUPublicEDKey`, `SUEnableInstallerLauncherService` |
 | `appcast.xml` | Sparkle update feed (served from `main` via raw GitHub URL) |
 | `The Pause.xcodeproj/project.pbxproj` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` |
 
@@ -42,11 +43,28 @@ which xcodebuild create-dmg
 
 # Sparkle sign_update (after at least one Xcode build)
 find ~/Library/Developer/Xcode/DerivedData -path "*/The_Pause-*/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update" | head -1
+
+# Notarization credentials (one-time setup)
+xcrun notarytool history --keychain-profile "The-Pause-Notary"
 ```
 
 Install missing tools:
 - `brew install create-dmg`
 - `GH_HOST=github.com gh auth login`
+
+**One-time notarization setup** (required for `./Scripts/release.sh`; skip with `--skip-notarize` for local-only builds):
+
+1. Create an [app-specific password](https://appleid.apple.com/account/manage) and store it in Keychain as `AC_PASSWORD` (or another name).
+2. Store notarytool credentials:
+
+```bash
+xcrun notarytool store-credentials "The-Pause-Notary" \
+  --apple-id "YOUR_APPLE_ID_EMAIL" \
+  --team-id S8QW3AN65C \
+  --password "@keychain:AC_PASSWORD"
+```
+
+The release script notarizes the exported `.app` (zip → submit → staple), creates the DMG, then notarizes and staples the DMG. Override the profile with `NOTARY_PROFILE=OtherName ./Scripts/release.sh` if needed.
 
 Sparkle private signing key must be in Keychain (never commit it). Public key in `Supporting/SparkleKeys.plist` is safe to commit.
 
@@ -84,11 +102,14 @@ From repo root:
 This will:
 1. Auto-increment `CURRENT_PROJECT_VERSION` in `project.pbxproj` (local only — not committed by script)
 2. Archive + export Developer ID build
-3. Create `build/release/ThePause.dmg`
-4. Create or update GitHub release `v{MARKETING_VERSION}` and upload the DMG
+3. Notarize and staple the `.app` via `notarytool`
+4. Create `build/release/ThePause.dmg`
+5. Notarize and staple the DMG
+6. Create or update GitHub release `v{MARKETING_VERSION}` and upload the DMG
 
 Useful flags:
 - `--local-only` — DMG only, no GitHub upload
+- `--skip-notarize` — skip Apple notarization (local testing)
 - `--app PATH` — skip build, package existing `.app`
 - `--no-bump` — skip build-number increment (with `--app`)
 - `--dry-run` — show steps without building

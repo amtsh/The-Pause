@@ -26,7 +26,14 @@ enum ExerciseNavigationDirection: Equatable {
 @MainActor
 @Observable
 final class ExerciseSession {
-    var exercise = PauseExercise.random()
+    var exerciseMode: PauseExerciseMode = .mind {
+        didSet {
+            // When mode changes, jump to a random exercise in the new mode.
+            exercise = PauseExercise.random(mode: exerciseMode, excluding: exercise)
+        }
+    }
+
+    var exercise = PauseExercise.random(mode: .mind)
     var navigationDirection = ExerciseNavigationDirection.neutral
     private var isDismissed = true
     private var didInstallObservers = false
@@ -102,7 +109,7 @@ final class ExerciseSession {
         guard isDismissed else { return }
         isDismissed = false
         navigationDirection = .neutral
-        exercise = PauseExercise.random(excluding: exercise)
+        exercise = PauseExercise.random(mode: exerciseMode, excluding: exercise)
     }
 
     private func handleWindowHidden(_ window: NSWindow) {

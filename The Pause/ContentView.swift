@@ -20,46 +20,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            NeighborRow(
-                label: "Previous",
-                chevron: "chevron.up",
-                title: session.exercise.previous.title,
-                contentID: session.exercise.id,
-                horizontalPadding: horizontalPadding,
-                reduceMotion: reduceMotion,
-                action: { navigatePrevious() }
-            )
-
-            sectionDivider()
-
-            ExerciseContent(exercise: session.exercise, reduceMotion: reduceMotion)
-                .id(session.exercise.id)
-                .transition(exerciseTransition)
-                .padding(.horizontal, horizontalPadding)
-                .padding(.vertical, sectionVerticalPadding)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .clipped()
-                .animation(exerciseAnimation, value: session.exercise.id)
-
-            sectionDivider()
-
-            NeighborRow(
-                label: "Next",
-                chevron: "chevron.down",
-                title: session.exercise.next.title,
-                contentID: session.exercise.id,
-                horizontalPadding: horizontalPadding,
-                reduceMotion: reduceMotion,
-                action: { navigateNext() }
-            )
-
-            sectionDivider()
-
             HStack(spacing: 10) {
-                modeSelector
-
-                Spacer()
-
                 Text("The Pause")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -95,6 +56,53 @@ struct ContentView: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
+            }
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, 8)
+
+            sectionDivider()
+
+            ExerciseContent(exercise: session.exercise, reduceMotion: reduceMotion)
+                .id(session.exercise.id)
+                .transition(exerciseTransition)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.vertical, sectionVerticalPadding)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .clipped()
+                .animation(exerciseAnimation, value: session.exercise.id)
+
+            sectionDivider()
+
+            HStack(spacing: 10) {
+                modeSelector
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    NeighborRow(
+                        label: "Prev",
+                        chevron: "chevron.left",
+                        chevronFirst: true,
+                        title: session.exercise.previous.title,
+                        contentID: session.exercise.id,
+                        horizontalPadding: 0,
+                        reduceMotion: reduceMotion,
+                        compact: true,
+                        action: { navigatePrevious() }
+                    )
+
+                    NeighborRow(
+                        label: "Next",
+                        chevron: "chevron.right",
+                        chevronFirst: false,
+                        title: session.exercise.next.title,
+                        contentID: session.exercise.id,
+                        horizontalPadding: 0,
+                        reduceMotion: reduceMotion,
+                        compact: true,
+                        action: { navigateNext() }
+                    )
+                }
             }
             .padding(.horizontal, horizontalPadding)
             .padding(.vertical, 8)
@@ -141,20 +149,25 @@ struct ContentView: View {
     }
 
     private func modeButton(title: String, mode: PauseExerciseMode) -> some View {
-        Button {
+        let isSelected = session.exerciseMode == mode
+
+        return Button {
             session.exerciseMode = mode
         } label: {
             Text(title)
+                .foregroundStyle(isSelected ? Color.primary : Color.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(session.exerciseMode == mode ? Color.primary.opacity(0.12) : Color.clear)
+                        .fill(isSelected ? Color.primary.opacity(0.12) : Color.clear)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(session.exerciseMode == mode ? Color.primary.opacity(0.4) : Color.secondary.opacity(0.2), lineWidth: 0.5)
-                )
+                .overlay {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(Color.primary.opacity(0.4), lineWidth: 0.5)
+                    }
+                }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(title) exercises")
@@ -241,33 +254,53 @@ private struct ExerciseContent: View {
 private struct NeighborRow: View {
     let label: String
     let chevron: String
+    var chevronFirst: Bool = true
     let title: String
     let contentID: String
     let horizontalPadding: CGFloat
     let reduceMotion: Bool
+    var compact: Bool = false
     let action: () -> Void
 
     @State private var isHovered = false
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: chevron)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(isHovered ? Color.primary.opacity(0.55) : Color.secondary)
+            Group {
+                if compact {
+                    HStack(spacing: 4) {
+                        if chevronFirst {
+                            Image(systemName: chevron)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(isHovered ? Color.primary.opacity(0.55) : Color.secondary)
+                            Text(label)
+                        } else {
+                            Text(label)
+                            Image(systemName: chevron)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(isHovered ? Color.primary.opacity(0.55) : Color.secondary)
+                        }
+                    }
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: chevron)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(isHovered ? Color.primary.opacity(0.55) : Color.secondary)
 
-                Text(label)
+                        Text(label)
 
-                Spacer()
+                        Spacer()
 
-                Text(title)
-                    .lineLimit(1)
-                    .contentTransition(.opacity)
+                        Text(title)
+                            .lineLimit(1)
+                            .contentTransition(.opacity)
+                    }
+                }
             }
             .font(.footnote)
             .foregroundStyle(.secondary)
-            .padding(.horizontal, horizontalPadding)
-            .padding(.vertical, 8)
+            .padding(.horizontal, compact ? 8 : horizontalPadding)
+            .padding(.vertical, compact ? 6 : 8)
             .background {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(isHovered ? Color.primary.opacity(0.06) : Color.clear)

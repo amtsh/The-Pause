@@ -108,12 +108,18 @@ struct ContentView: View {
             .padding(.vertical, 8)
         }
         .background {
-            RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
-                .fill(.regularMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
-                        .strokeBorder(.primary.opacity(0.06), lineWidth: 0.5)
-                }
+            ZStack {
+                SubtleGradientBackground(
+                    reduceMotion: reduceMotion,
+                    accentPhase: gradientAccentPhase
+                )
+
+                RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
+                    .fill(.thinMaterial)
+
+                RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.06), lineWidth: 0.5)
+            }
         }
         .clipShape(RoundedRectangle(cornerRadius: popoverCornerRadius, style: .continuous))
         .focusable()
@@ -181,6 +187,13 @@ struct ContentView: View {
 
     private var exerciseAnimation: Animation? {
         reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.86)
+    }
+
+    private var gradientAccentPhase: Double {
+        let hash = session.exercise.id.utf8.reduce(into: 0) { partial, byte in
+            partial = partial &* 31 &+ Int(byte)
+        }
+        return Double(abs(hash) % 360) / 360.0 * .pi * 2
     }
 
     private var exerciseTransition: AnyTransition {

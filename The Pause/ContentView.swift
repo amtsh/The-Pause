@@ -55,7 +55,11 @@ struct ContentView: View {
 
             sectionDivider()
 
-            HStack {
+            HStack(spacing: 10) {
+                modeSelector
+
+                Spacer()
+
                 Text("The Pause")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -126,6 +130,34 @@ struct ContentView: View {
             session.installIfNeeded()
             launchAtLogin = LaunchAtLogin.isEnabled
         }
+    }
+
+    private var modeSelector: some View {
+        HStack(spacing: 4) {
+            modeButton(title: "Mind", mode: .mind)
+            modeButton(title: "Voice", mode: .voice)
+        }
+        .font(.footnote)
+    }
+
+    private func modeButton(title: String, mode: PauseExerciseMode) -> some View {
+        Button {
+            session.exerciseMode = mode
+        } label: {
+            Text(title)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(session.exerciseMode == mode ? Color.primary.opacity(0.12) : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(session.exerciseMode == mode ? Color.primary.opacity(0.4) : Color.secondary.opacity(0.2), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(title) exercises")
     }
 
     private func sectionDivider() -> some View {

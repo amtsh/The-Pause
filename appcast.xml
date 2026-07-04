@@ -13,6 +13,20 @@
     <language>en</language>
 
     <item>
+      <title>Version 1.1</title>
+      <sparkle:releaseNotesLink>https://github.com/amtsh/The-Pause/releases/tag/v1.1</sparkle:releaseNotesLink>
+      <pubDate>Sat, 04 Jul 2026 15:42:00 +0000</pubDate>
+      <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
+      <enclosure
+        url="https://github.com/amtsh/The-Pause/releases/download/v1.1/ThePause.dmg"
+        sparkle:edSignature="EgsJ1obZwdOaNC2UTQGVE8V869JXLvkQXVoc8lQiKe2BaIqkFVNILUTFdz/RqK1PrH3dmqReu7cDKXiUC8UwAg=="
+        length="1063059"
+        type="application/octet-stream"/>
+    </item>
+
+    <item>
       <title>Version 1.0</title>
       <sparkle:releaseNotesLink>https://github.com/amtsh/The-Pause/releases/tag/v1.0</sparkle:releaseNotesLink>
       <pubDate>Sat, 04 Jul 2026 15:34:00 +0000</pubDate>
